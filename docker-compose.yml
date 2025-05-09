@@ -1,0 +1,9 @@
+services:
+  spleeter:
+    build: .
+    environment:
+      - SPLEETER_MODEL=${SPLEETER_MODEL:-5stems} # Default to 5stems
+    volumes:
+      - ${HOST_INPUT_DIR}:/app/input
+      - ${HOST_OUTPUT_DIR}:/app/output
+    restart: "no"

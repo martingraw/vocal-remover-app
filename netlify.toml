@@ -1,0 +1,19 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "zisi" # Changed from esbuild to zisi
+
+[functions."*"]
+  timeout = 300
+
+[dev]
+  functionsTimeout = 300
+  port = 9988
+  frameworkPort = 9999
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

@@ -1,0 +1,19 @@
+{
+  "name": "simple-vocal-remover",
+  "version": "1.0.0",
+  "description": "A web application that uses Spleeter to separate vocals from music tracks",
+  "main": "index.html",
+  "scripts": {
+    "start": "netlify dev",
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "netlify-cli": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "",
+  "license": "MIT"
+}

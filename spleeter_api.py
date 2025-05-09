@@ -19,6 +19,10 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy", "message": "Spleeter API is running."}), 200
+
 @app.route('/process', methods=['POST'])
 def process_audio_route():
     if 'audio' not in request.files:

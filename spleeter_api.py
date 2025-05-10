@@ -4,9 +4,13 @@ import tempfile
 import shutil
 import base64
 from flask import Flask, request, jsonify
+from flask_cors import CORS # Import CORS
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+# Initialize CORS: allow requests to /process/ from your Netlify app's origin.
+# This will also handle preflight OPTIONS requests.
+CORS(app, resources={r"/process/": {"origins": "https://vocal-remover-tool.netlify.app"}})
 
 # Configuration
 UPLOAD_FOLDER = 'uploads'
@@ -23,10 +27,53 @@ def allowed_file(filename):
 def health_check():
     return jsonify({"status": "healthy", "message": "Spleeter API is running."}), 200
 
-@app.route('/process', methods=['POST'])
+@app.route('/process/', methods=['POST']) # Added trailing slash to match client request
 def process_audio_route():
-    if 'audio' not in request.files:
-        return jsonify({"error": "No audio file part"}), 400
+    # NOTE: The frontend sends JSON data (Content-Type: application/json) with 'file' as a base64 string.
+    # The current code expects multipart/form-data ('audio' in request.files).
+    # This will need to be changed in the next step if CORS is resolved.
+    if 'audio' not in request.files: # This check will likely fail with current frontend.
+        # For now, let's check if it's a JSON request as a placeholder for the next fix.
+        if not request.is_json:
+            return jsonify({"error": "Request must be JSON or audio file part missing"}), 400
+        # If it is JSON, the actual data handling will be addressed next.
+        # For now, let it pass this initial check if JSON, to see CORS error resolve.
+        pass # Placeholder, will be refined.
+
+    
+    file = request.files.get('audio') # Use .get() to avoid KeyError if not present
+    model_name = request.form.get('model', '2stems') # This also expects form-data
+
+    if request.is_json:
+        # If it's JSON, we'll eventually get data from request.get_json()
+        # For now, this block is just to acknowledge the mismatch.
+        # The 'file' and 'model_name' variables above will be None or default.
+        app.logger.info("Received JSON request, current file/model logic will not work as expected yet.")
+        # To prevent immediate failure due to 'file' being None:
+        # This is a temporary measure to get past the initial checks and test CORS.
+        # The real fix involves parsing request.get_json().
+        # We expect a 400 or 500 error from later in the code due to this mismatch,
+        # but the CORS error should be gone.
+        # A more direct way to test CORS is to see if the OPTIONS preflight passes.
+        # If the code proceeds, it will fail when `file.filename` is accessed.
+        # Let's return a temporary response if it's JSON to isolate CORS.
+        # This part will be removed once we adapt to JSON input.
+        temp_data = request.get_json()
+        if not temp_data or 'file' not in temp_data or 'modelName' not in temp_data:
+             return jsonify({"error": "JSON payload received, but data format is incorrect or file/modelName missing. Further backend changes needed."}), 400
+        
+        # If we reach here, it means CORS preflight likely passed, and we got a JSON POST.
+        # The actual processing logic for JSON is still pending.
+        # For now, return a message indicating this state.
+        return jsonify({"message": "CORS OK, JSON received. Backend needs update for JSON processing.", "received_model": temp_data.get("modelName")}), 200
+
+
+    # The following logic is for multipart/form-data and will not work correctly with the current JSON frontend.
+    if not file: # file will be None if it's a JSON request and not multipart
+        return jsonify({"error": "No audio file provided in expected format (multipart/form-data)"}), 400
+        
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
     
     file = request.files['audio']
     model_name = request.form.get('model', '2stems') # Default to 2stems

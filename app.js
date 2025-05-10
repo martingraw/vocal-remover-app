@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const modelName = "5stems"; // Hardcode to 5stems
       
       // Send to serverless function
-      const response = await fetch('/.netlify/functions/process-audio', {
+      const response = await fetch('https://vocal-remover.fly.dev/process/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

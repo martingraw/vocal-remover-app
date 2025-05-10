@@ -32,59 +32,35 @@ def process_audio_route():
     # NOTE: The frontend sends JSON data (Content-Type: application/json) with 'file' as a base64 string.
     # The current code expects multipart/form-data ('audio' in request.files).
     # This will need to be changed in the next step if CORS is resolved.
-    if 'audio' not in request.files: # This check will likely fail with current frontend.
-        # For now, let's check if it's a JSON request as a placeholder for the next fix.
-        if not request.is_json:
-            return jsonify({"error": "Request must be JSON or audio file part missing"}), 400
-        # If it is JSON, the actual data handling will be addressed next.
-        # For now, let it pass this initial check if JSON, to see CORS error resolve.
-        pass # Placeholder, will be refined.
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
 
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid JSON payload"}), 400
+
+    base64_audio_data_url = data.get('file')
+    model_name = data.get('modelName', '2stems') # Default to 2stems if not provided
+
+    if not base64_audio_data_url:
+        return jsonify({"error": "No audio data in 'file' field"}), 400
     
-    file = request.files.get('audio') # Use .get() to avoid KeyError if not present
-    model_name = request.form.get('model', '2stems') # This also expects form-data
+    if not model_name: # Should default, but good to check
+        return jsonify({"error": "No model name in 'modelName' field"}), 400
 
-    if request.is_json:
-        # If it's JSON, we'll eventually get data from request.get_json()
-        # For now, this block is just to acknowledge the mismatch.
-        # The 'file' and 'model_name' variables above will be None or default.
-        app.logger.info("Received JSON request, current file/model logic will not work as expected yet.")
-        # To prevent immediate failure due to 'file' being None:
-        # This is a temporary measure to get past the initial checks and test CORS.
-        # The real fix involves parsing request.get_json().
-        # We expect a 400 or 500 error from later in the code due to this mismatch,
-        # but the CORS error should be gone.
-        # A more direct way to test CORS is to see if the OPTIONS preflight passes.
-        # If the code proceeds, it will fail when `file.filename` is accessed.
-        # Let's return a temporary response if it's JSON to isolate CORS.
-        # This part will be removed once we adapt to JSON input.
-        temp_data = request.get_json()
-        if not temp_data or 'file' not in temp_data or 'modelName' not in temp_data:
-             return jsonify({"error": "JSON payload received, but data format is incorrect or file/modelName missing. Further backend changes needed."}), 400
-        
-        # If we reach here, it means CORS preflight likely passed, and we got a JSON POST.
-        # The actual processing logic for JSON is still pending.
-        # For now, return a message indicating this state.
-        return jsonify({"message": "CORS OK, JSON received. Backend needs update for JSON processing.", "received_model": temp_data.get("modelName")}), 200
+    try:
+        # The frontend sends a data URL: "data:audio/wav;base64,ENCODED_STRING"
+        # We need to strip the prefix to get the pure base64 string.
+        header, encoded_data = base64_audio_data_url.split(',', 1)
+        audio_bytes = base64.b64decode(encoded_data)
+    except Exception as e:
+        app.logger.error(f"Base64 decoding error: {str(e)}")
+        return jsonify({"error": "Invalid base64 audio data", "details": str(e)}), 400
 
-
-    # The following logic is for multipart/form-data and will not work correctly with the current JSON frontend.
-    if not file: # file will be None if it's a JSON request and not multipart
-        return jsonify({"error": "No audio file provided in expected format (multipart/form-data)"}), 400
-        
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    
-    file = request.files['audio']
-    model_name = request.form.get('model', '2stems') # Default to 2stems
-
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
-    if not file or not allowed_file(file.filename):
-        return jsonify({"error": "File type not allowed"}), 400
-
-    filename = secure_filename(file.filename)
+    # Use a generic filename for the temporary input file, Spleeter handles various formats.
+    # It's good practice to infer extension if possible, but Spleeter is robust.
+    # For simplicity, we'll use a generic name. The actual format is in the audio_bytes.
+    filename = "input_audio.tmp" # Generic temp filename
     
     # Use a temporary directory for each request to handle concurrent requests
     # and ensure cleanup. Spleeter creates a subdirectory named after the input file.
@@ -93,7 +69,9 @@ def process_audio_route():
         spleeter_output_dir = os.path.join(processing_dir, "spleeter_out")
         os.makedirs(spleeter_output_dir, exist_ok=True)
         
-        file.save(input_file_path)
+        # Correctly write the decoded audio bytes to the temporary file
+        with open(input_file_path, 'wb') as f:
+            f.write(audio_bytes)
 
         try:
             spleeter_command = [

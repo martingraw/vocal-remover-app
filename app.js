@@ -289,8 +289,18 @@ document.addEventListener('DOMContentLoaded', () => {
     closeAllModals();
     
     // Open the specified modal
+    const modalContent = modal.querySelector('.modal'); // Get the actual modal content div
     modal.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
+    document.body.style.overflow = 'hidden'; // Prevent scrolling of iframe body
+
+    // Scroll the modal content into view
+    if (modalContent) {
+      // A slight delay can sometimes help ensure the modal is fully rendered and positioned
+      // before scrolling, especially if there are CSS transitions.
+      setTimeout(() => {
+        modalContent.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+      }, 50); // 50ms delay, adjust if needed
+    }
   }
   
   function closeAllModals() {

@@ -4,19 +4,18 @@ services:
     env: docker # We are using Docker
     dockerfilePath: ./Dockerfile # Path to your Dockerfile
     # Docker context is the root of your repo by default
-    # healthCheckPath: / # Optional: Add a simple health check endpoint in spleeter_api.py if needed
+    healthCheckPath: / # Enabled health check
     disk: # Spleeter models can be large and are downloaded into the container
       name: spleeter-models
       mountPath: /root/.cache/spleeter # Spleeter's default model download path
       sizeGB: 5 # Adjust size as needed (2stems ~100MB, 4stems ~100MB, 5stems ~150MB, plus base image and other files)
                 # Consider the total size of all models if they are all downloaded.
-    instanceType: starter # Or a paid instance type. Spleeter is resource-intensive.
-                         # Free instance types on Render might be too slow or have insufficient RAM/CPU.
-                         # Check Render's current offerings. 'Starter' or 'Standard' might be necessary.
+    instanceType: free # Using Render's free tier for initial setup.
+                         # Likely too small for Spleeter processing; upgrade will be needed.
     envVars:
       - key: PYTHON_VERSION # Ensure Render uses a compatible Python if not relying solely on Docker's Python
         value: "3.9" # Matches your Dockerfile base image
-      - key: PORT # Gunicorn in Dockerfile uses this; Render sets it automatically.
-        value: "8080" # Default for Gunicorn if Render doesn't set PORT, but Render usually does.
+      # - key: PORT # Render injects PORT automatically; Gunicorn in Dockerfile uses it.
+      #  value: "8080" # This line can usually be removed.
       # Add any other environment variables your spleeter_api.py might need here.
       # For example, if you add API keys or other configurations.

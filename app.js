@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const modelName = "5stems"; // Hardcode to 5stems
       
       // Send to serverless function
-      const response = await fetch('https://vocal-remover.fly.dev/process/', {
+      const response = await fetch('https://p01--vocal-remover-api--tdhrgr9lvps2.code.run/process/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

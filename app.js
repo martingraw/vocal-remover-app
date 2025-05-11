@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // A slight delay can sometimes help ensure the modal is fully rendered and positioned
       // before scrolling, especially if there are CSS transitions.
       setTimeout(() => {
-        modalContent.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+        modalContent.scrollIntoView({ behavior: 'auto', block: 'start', inline: 'nearest' });
       }, 50); // 50ms delay, adjust if needed
     }
   }

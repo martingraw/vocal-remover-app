@@ -38,4 +38,4 @@ EXPOSE 8080
 # Run the Gunicorn server
 # The number of workers can be tuned. Render might override this.
 # Timeout is important for long Spleeter processes.
-CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 360 spleeter_api:app
+CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 600 spleeter_api:app

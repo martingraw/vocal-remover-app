@@ -83,21 +83,30 @@ def process_audio_route():
             ]
             app.logger.info(f"Running Spleeter: {' '.join(spleeter_command)}")
             
-            # Increased timeout for Spleeter processing
-            process = subprocess.run(spleeter_command, capture_output=True, text=True, check=True, timeout=300) # 5 minutes timeout
+            # Increased timeout for Spleeter processing (10 minutes instead of 5)
+            app.logger.info(f"Starting Spleeter processing with file size: {os.path.getsize(input_file_path)} bytes")
+            app.logger.info(f"Model being used: {model_name}")
+            
+            process = subprocess.run(spleeter_command, capture_output=True, text=True, check=True, timeout=600) # 10 minutes timeout
+            app.logger.info(f"Spleeter processing completed successfully")
             app.logger.info(f"Spleeter stdout: {process.stdout}")
-            app.logger.error(f"Spleeter stderr: {process.stderr}")
+            app.logger.info(f"Spleeter stderr: {process.stderr}")
 
         except subprocess.CalledProcessError as e:
             app.logger.error(f"Spleeter CalledProcessError: {e.stderr}")
             app.logger.error(f"Spleeter stdout: {e.stdout}") # Log stdout as well for more context
+            app.logger.error(f"Command that failed: {' '.join(spleeter_command)}")
+            # Check if there's a memory error in the output
+            if "MemoryError" in e.stderr or "OOM" in e.stderr or "out of memory" in e.stderr.lower():
+                return jsonify({"error": "Spleeter processing failed due to memory limitations. Try a smaller file or use the 2stems model."}), 500
             return jsonify({"error": "Spleeter processing failed", "details": e.stderr}), 500
         except subprocess.TimeoutExpired:
-            app.logger.error("Spleeter command timed out after 300 seconds")
-            return jsonify({"error": "Spleeter processing timed out"}), 500
+            app.logger.error(f"Spleeter command timed out after 600 seconds for file size: {os.path.getsize(input_file_path)} bytes")
+            return jsonify({"error": "Spleeter processing timed out. Try a smaller file or use the 2stems model."}), 500
         except Exception as e:
             import traceback
             app.logger.error(f"An unexpected error occurred in /process route: {str(e)}")
+            app.logger.error(f"File size that caused error: {os.path.getsize(input_file_path)} bytes")
             app.logger.error(traceback.format_exc()) # Log the full traceback
             return jsonify({"error": "An unexpected error occurred during processing", "details": str(e)}), 500
 

@@ -124,7 +124,19 @@
 
             <!-- Error Section -->
             <div id="error" class="error-section hidden">
-              <p>An error occurred during processing. Please try again with a different file.</p>
+              <div class="error-message">
+                <h3>Processing Error</h3>
+                <p id="errorText">An error occurred during processing. Please try again with a different file.</p>
+                <div class="error-tips">
+                  <h4>Tips to resolve this issue:</h4>
+                  <ul>
+                    <li>Try using a smaller or shorter audio file</li>
+                    <li>Switch to the 2stems model in Settings (less resource-intensive)</li>
+                    <li>Ensure your audio file is in a supported format (MP3, WAV, OGG, FLAC, M4A)</li>
+                    <li>Wait a few minutes and try again (server might be busy)</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>

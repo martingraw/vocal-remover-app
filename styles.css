@@ -539,15 +539,47 @@ audio {
 .error-section {
   background-color: rgba(255, 59, 48, 0.1);
   border-radius: 8px;
-  padding: 20px;
+  padding: 25px;
   margin-top: 30px;
-  text-align: center;
+  text-align: left;
   border: 1px solid rgba(255, 59, 48, 0.3);
+  width: 100%;
 }
 
-.error-section p {
+.error-message h3 {
+  color: #ff3b30;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.error-section #errorText {
   color: #ff3b30;
   font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.error-tips {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.error-tips h4 {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.error-tips ul {
+  padding-left: 20px;
+  color: var(--text-secondary);
+}
+
+.error-tips li {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
 }
 
 /* Modal/Popup Styles */

@@ -173,7 +173,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (!response.ok) {
-        throw new Error('Processing failed');
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData && errorData.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('Processing failed');
+        }
       }
 
       const data = await response.json(); // { stems: { /* ... */ }, modelUsed: "..." }
@@ -230,6 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
       resultsSection.classList.remove('hidden');
     } catch (error) {
       console.error('Error:', error);
+      // Display the specific error message
+      const errorTextElement = document.getElementById('errorText');
+      if (errorTextElement) {
+        errorTextElement.textContent = error.message || 'An error occurred during processing. Please try again with a different file.';
+      }
       errorSection.classList.remove('hidden');
     } finally {
       statusSection.classList.add('hidden');

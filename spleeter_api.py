@@ -88,13 +88,16 @@ def process_audio_route():
             app.logger.error(f"Spleeter stderr: {process.stderr}")
 
         except subprocess.CalledProcessError as e:
-            app.logger.error(f"Spleeter error: {e.stderr}")
+            app.logger.error(f"Spleeter CalledProcessError: {e.stderr}")
+            app.logger.error(f"Spleeter stdout: {e.stdout}") # Log stdout as well for more context
             return jsonify({"error": "Spleeter processing failed", "details": e.stderr}), 500
         except subprocess.TimeoutExpired:
-            app.logger.error("Spleeter command timed out")
+            app.logger.error("Spleeter command timed out after 300 seconds")
             return jsonify({"error": "Spleeter processing timed out"}), 500
         except Exception as e:
-            app.logger.error(f"An unexpected error occurred: {str(e)}")
+            import traceback
+            app.logger.error(f"An unexpected error occurred in /process route: {str(e)}")
+            app.logger.error(traceback.format_exc()) # Log the full traceback
             return jsonify({"error": "An unexpected error occurred during processing", "details": str(e)}), 500
 
         # Determine expected stems
